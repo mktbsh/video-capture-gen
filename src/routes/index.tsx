@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { VideoView } from "@/components/video-view";
-import { headlessFilePicker } from "@/lib/file";
 import { sha256 } from "@/lib/hash";
 import { cn } from "@/lib/utils";
 import { getDurationFromVideo } from "@/lib/video";
