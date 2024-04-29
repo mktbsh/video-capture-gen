@@ -39,16 +39,9 @@ function Page() {
 
   const hasVideo = state !== undefined;
 
-  async function handleClickSelectVideo() {
-    const fileList = await headlessFilePicker({
-      accept: "video/webm,video/mp4",
-      multiple: false,
-    });
-    const files = Array.from(fileList);
-    if (files.length === 0) return;
-    const [file] = files;
+  async function handleFileAccepted([file]: File[]) {
+    if (!file) return;
     const duration = await getDurationFromVideo(file);
-
     setState({
       video: file,
       key: await sha256(file),
@@ -74,9 +67,9 @@ function Page() {
 
   async function handleStart() {
     if (!state) return;
-    const { start  } = initVideoCaptureMachine({
-      src: URL.createObjectURL(state.video)
-    })
+    const { start } = initVideoCaptureMachine({
+      src: URL.createObjectURL(state.video),
+    });
 
     const exist = await isMetaExist(state.key);
     if (!exist) {
@@ -90,7 +83,7 @@ function Page() {
       progressFn: updateProgress,
     });
 
-    await Promise.all(results.map(v => insertCapture(state.key, v.file)));
+    await Promise.all(results.map((v) => insertCapture(state.key, v.file)));
 
     navigate({
       to: "/v/$key",
@@ -118,7 +111,7 @@ function Page() {
           {hasVideo ? (
             <div className="space-y-2">
               <VideoView video={state.video} />
-              {state.progress === undefined && (
+              {state.progress === undefined ? (
                 <div className="flex gap-4">
                   <Slider
                     className="flex-1"
@@ -143,6 +136,10 @@ function Page() {
                     Start
                   </Button>
                 </div>
+              ) : (
+                <div className="pt-4">
+                <Progress value={state.progress} />
+              </div>
               )}
 
               <dl
@@ -160,14 +157,11 @@ function Page() {
                       Progress
                     </dt>
                     <dd className="mt-1 text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900">
-                      {(state.progress).toFixed(0)}%
+                      {state.progress.toFixed(0)}%
                     </dd>
                   </div>
                 )}
               </dl>
-              <div className="pt-4">
-                <Progress value={state.progress} />
-              </div>
             </div>
           ) : (
             <FileUploader
@@ -176,7 +170,7 @@ function Page() {
                 "video/webm": [],
                 "video/mp4": [],
               }}
-              onUpload={handleClickSelectVideo}
+              onUpload={handleFileAccepted}
               maxSize={1024 * 1024 * 1024 * 1.5}
             />
           )}

@@ -1,14 +1,14 @@
-import * as React from "react"
-import { UploadIcon } from "lucide-react"
+import * as React from "react";
+import { UploadIcon } from "lucide-react";
 import Dropzone, {
   type DropzoneProps,
   type FileRejection,
-} from "react-dropzone"
-import { toast } from "sonner"
+} from "react-dropzone";
+import { toast } from "sonner";
 
-import { cn } from "@/lib/utils"
-import { useControllableState } from "@/hooks/use-controllable-state"
-import { fileSize } from "@/lib/file"
+import { cn } from "@/lib/utils";
+import { useControllableState } from "@/hooks/use-controllable-state";
+import { fileSize } from "@/lib/file";
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
@@ -17,7 +17,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default undefined
    * @example value={files}
    */
-  value?: File[]
+  value?: File[];
 
   /**
    * Function to be called when the value changes.
@@ -25,7 +25,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default undefined
    * @example onValueChange={(files) => setFiles(files)}
    */
-  onValueChange?: React.Dispatch<React.SetStateAction<File[]>>
+  onValueChange?: React.Dispatch<React.SetStateAction<File[]>>;
 
   /**
    * Function to be called when files are uploaded.
@@ -33,7 +33,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default undefined
    * @example onUpload={(files) => uploadFiles(files)}
    */
-  onUpload?: (files: File[]) => Promise<void>
+  onUpload?: (files: File[]) => Promise<void>;
 
   /**
    * Progress of the uploaded files.
@@ -41,7 +41,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default undefined
    * @example progresses={{ "file1.png": 50 }}
    */
-  progresses?: Record<string, number>
+  progresses?: Record<string, number>;
 
   /**
    * Accepted file types for the uploader.
@@ -52,7 +52,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * ```
    * @example accept={["image/png", "image/jpeg"]}
    */
-  accept?: DropzoneProps["accept"]
+  accept?: DropzoneProps["accept"];
 
   /**
    * Maximum file size for the uploader.
@@ -60,7 +60,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default 1024 * 1024 * 2 // 2MB
    * @example maxSize={1024 * 1024 * 2} // 2MB
    */
-  maxSize?: DropzoneProps["maxSize"]
+  maxSize?: DropzoneProps["maxSize"];
 
   /**
    * Maximum number of files for the uploader.
@@ -68,7 +68,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default 1
    * @example maxFiles={5}
    */
-  maxFiles?: DropzoneProps["maxFiles"]
+  maxFiles?: DropzoneProps["maxFiles"];
 
   /**
    * Whether the uploader should accept multiple files.
@@ -76,7 +76,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default false
    * @example multiple
    */
-  multiple?: boolean
+  multiple?: boolean;
 
   /**
    * Whether the uploader is disabled.
@@ -84,7 +84,7 @@ interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
    * @default false
    * @example disabled
    */
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 export function FileUploader(props: FileUploaderProps) {
@@ -100,39 +100,33 @@ export function FileUploader(props: FileUploaderProps) {
     disabled = false,
     className,
     ...dropzoneProps
-  } = props
+  } = props;
 
   const [files, setFiles] = useControllableState({
     prop: valueProp,
     onChange: onValueChange,
-  })
+  });
 
   const onDrop = React.useCallback(
     (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       if (!multiple && maxFiles === 1 && acceptedFiles.length > 1) {
-        toast.error("Cannot upload more than 1 file at a time")
-        return
+        toast.error("Cannot upload more than 1 file at a time");
+        return;
       }
 
       if ((files?.length ?? 0) + acceptedFiles.length > maxFiles) {
-        toast.error(`Cannot upload more than ${maxFiles} files`)
-        return
+        toast.error(`Cannot upload more than ${maxFiles} files`);
+        return;
       }
 
-      const newFiles = acceptedFiles.map((file) =>
-        Object.assign(file, {
-          preview: URL.createObjectURL(file),
-        })
-      )
+      const updatedFiles = files ? [...files, ...acceptedFiles] : acceptedFiles;
 
-      const updatedFiles = files ? [...files, ...newFiles] : newFiles
-
-      setFiles(updatedFiles)
+      setFiles(updatedFiles);
 
       if (rejectedFiles.length > 0) {
         rejectedFiles.forEach(({ file }) => {
-          toast.error(`File ${file.name} was rejected`)
-        })
+          toast.error(`File ${file.name} was rejected`);
+        });
       }
 
       if (
@@ -141,36 +135,23 @@ export function FileUploader(props: FileUploaderProps) {
         updatedFiles.length <= maxFiles
       ) {
         const target =
-          updatedFiles.length > 0 ? `${updatedFiles.length} files` : `file`
+          updatedFiles.length > 0 ? `${updatedFiles.length} files` : `file`;
 
         toast.promise(onUpload(updatedFiles), {
-          loading: `Uploading ${target}...`,
+          loading: `Loading ${target}...`,
           success: () => {
-            setFiles([])
-            return `${target} uploaded`
+            setFiles([]);
+            return `${target} loaded`;
           },
-          error: `Failed to upload ${target}`,
-        })
+          error: `Failed to load ${target}`,
+        });
       }
     },
 
-    [files, maxFiles, multiple, onUpload, setFiles]
-  )
+    [files, maxFiles, multiple, onUpload, setFiles],
+  );
 
-  // Revoke preview url when component unmounts
-  React.useEffect(() => {
-    return () => {
-      if (!files) return
-      files.forEach((file) => {
-        if (isFileWithPreview(file)) {
-          URL.revokeObjectURL(file.preview)
-        }
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const isDisabled = disabled || (files?.length ?? 0) >= maxFiles
+  const isDisabled = disabled || (files?.length ?? 0) >= maxFiles;
 
   return (
     <div className="relative flex flex-col gap-6 overflow-hidden">
@@ -186,58 +167,41 @@ export function FileUploader(props: FileUploaderProps) {
           <div
             {...getRootProps()}
             className={cn(
-              "group relative grid h-52 w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-2.5 text-center transition hover:bg-muted/25",
+              "group relative grid h-80 w-full cursor-pointer place-items-center rounded-lg border-2 border-dashed border-muted-foreground/25 px-5 py-2.5 text-center transition hover:bg-muted/25",
               "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isDragActive && "border-muted-foreground/50",
               isDisabled && "pointer-events-none opacity-60",
-              className
+              className,
             )}
             {...dropzoneProps}
           >
             <input {...getInputProps()} />
-            {isDragActive ? (
-              <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
-                <div className="rounded-full border border-dashed p-3">
-                  <UploadIcon
-                    className="size-7 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                </div>
+
+            <div className="w-full h-full flex flex-col items-center justify-center gap-4 sm:px-5">
+              <div className="rounded-full border border-dashed p-3">
+                <UploadIcon
+                  className="size-7 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="space-y-px w-96">
                 <p className="font-medium text-muted-foreground">
-                  Drop the files here
+                  {isDragActive
+                    ? "Drop the files here"
+                    : `Drag 'n' drop files here, or click to select files`}
+                </p>
+                <p className="text-sm text-muted-foreground/70">
+                  You can upload
+                  {maxFiles > 1
+                    ? ` ${maxFiles === Infinity ? "multiple" : maxFiles}
+                      files (up to ${fileSize({ source: maxSize })} each)`
+                    : ` a file with ${fileSize({ source: maxSize })}`}
                 </p>
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
-                <div className="rounded-full border border-dashed p-3">
-                  <UploadIcon
-                    className="size-7 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                </div>
-                <div className="space-y-px">
-                  <p className="font-medium text-muted-foreground">
-                    Drag {`'n'`} drop files here, or click to select files
-                  </p>
-                  <p className="text-sm text-muted-foreground/70">
-                    You can upload
-                    {maxFiles > 1
-                      ? ` ${maxFiles === Infinity ? "multiple" : maxFiles}
-                      files (up to ${fileSize({ source: maxSize })} each)`
-                      : ` a file with ${fileSize({ source: maxSize })}`}
-                  </p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </Dropzone>
     </div>
-  )
-}
-
-
-
-function isFileWithPreview(file: File): file is File & { preview: string } {
-  return "preview" in file && typeof file.preview === "string"
+  );
 }
