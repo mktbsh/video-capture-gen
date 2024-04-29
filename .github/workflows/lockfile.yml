@@ -1,0 +1,17 @@
+name: Lockfile
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  bunLockCheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - name: check lock diff
+        run:  diff <(bun bun.lockb) yarn.lock
