@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import path from "path"
+import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
@@ -10,6 +12,11 @@ export default defineConfig(({ command }) => {
 
   return {
     base: slug ? `/${slug}/` : undefined,
-    plugins: [react()],
+    plugins: [react(), TanStackRouterVite()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
   }
 })
