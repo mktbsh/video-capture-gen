@@ -16,10 +16,10 @@ import {
   isMetaExist,
   saveNewMeta,
 } from "@/repository/meta-repository";
-import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
-export const Route = createLazyFileRoute("/")({
+export const Route = createFileRoute("/")({
   component: Page,
 });
 
