@@ -1,9 +1,18 @@
 import { NavBar } from "@/components/navbar";
 import { APP_NAME } from "@/const/site";
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 
-import logo from '/camera.svg';
+import logo from "/camera.svg";
+import React from "react";
+
+const TanStackRouterDevtools =
+  process.env.NODE_ENV === "production"
+    ? () => null
+    : React.lazy(() =>
+        import("@tanstack/router-devtools").then((res) => ({
+          default: res.TanStackRouterDevtools,
+        })),
+      );
 
 export const Route = createRootRoute({
   component: () => (
@@ -15,7 +24,7 @@ export const Route = createRootRoute({
             <span className="font-bold">{APP_NAME}</span>
           </Link>
         </nav>
-        <NavBar/>
+        <NavBar />
       </aside>
       <div className="flex-1">
         <Outlet />
