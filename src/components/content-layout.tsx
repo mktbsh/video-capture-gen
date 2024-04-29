@@ -1,12 +1,9 @@
+import { cn } from "@/lib/utils";
 import { PropsWithChildren } from "react";
 
-type Props = {
-  children: React.ReactNode;
-};
-
-function ContentLayout(props: Props) {
+function ContentLayout(props: PropsWithChildren<{ className?: string }>) {
   return (
-    <div className="h-full w-full flex flex-col gap-4 pb-4">
+    <div className={cn("h-full w-full flex flex-col gap-4 pb-4", props.className)}>
       {props.children}
     </div>
   );

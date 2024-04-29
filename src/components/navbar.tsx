@@ -4,6 +4,7 @@ import { ChevronRightIcon, Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function NavBar() {
   const [search, setSearch] = useState("");
@@ -21,22 +22,22 @@ export function NavBar() {
         <Input
           type="search"
           placeholder="Search videos..."
-          className="pl-8 ring-1 ring-gray-300"
+          className="pl-8 ring-1 ring-gray-50"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
       <ScrollArea className="h-full w-full pb-2 space-y-2">
-        {filtered.map((video) => (
+        {filtered.map((video, index) => (
           <Link
             key={video.key}
             to="/v/$key"
             params={{ key: video.key }}
-            className="flex items-center justify-between px-2 py-1 rounded-lg [&.active]:bg-yellow-200 hover:bg-yellow-200"
+            className={cn("flex items-center justify-between p-2 rounded-lg [&.active]:bg-yellow-200 hover:bg-yellow-200", index > 0 && "mt-2")}
           >
-            <span className="text-sm text-yellow-900">{video.title}</span>
-            <ChevronRightIcon className="h-5 w-5 text-yellow-500" />
+            <span className="text-sm text-yellow-900">{video.title.substring(0, 22)}{video.title.length > 22 ? '...' : ''}</span>
+            <ChevronRightIcon className="h-5 w-5 text-yellow-500 flex-shrink-0" />
           </Link>
         ))}
       </ScrollArea>

@@ -1,5 +1,6 @@
 import { ContentLayout } from "@/components/content-layout";
 import { ContentTitle } from "@/components/content-title";
+import { FileUploader } from "@/components/file-uploader";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
@@ -8,7 +9,7 @@ import { headlessFilePicker } from "@/lib/file";
 import { sha256 } from "@/lib/hash";
 import { cn } from "@/lib/utils";
 import { getDurationFromVideo } from "@/lib/video";
-import { Vtg } from "@/lib/vtg";
+import { initVideoCaptureMachine } from "@/lib/video-capture";
 import { insertCapture } from "@/repository/capture-repository";
 import {
   createMeta,
@@ -16,7 +17,6 @@ import {
   saveNewMeta,
 } from "@/repository/meta-repository";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
-import { Video } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createLazyFileRoute("/")({
@@ -48,6 +48,7 @@ function Page() {
     if (files.length === 0) return;
     const [file] = files;
     const duration = await getDurationFromVideo(file);
+
     setState({
       video: file,
       key: await sha256(file),
@@ -61,11 +62,21 @@ function Page() {
     setState(undefined);
   }
 
+  function updateProgress(progress: number) {
+    setState((prev) => {
+      if (!prev) return undefined;
+      return {
+        ...prev,
+        progress,
+      };
+    });
+  }
+
   async function handleStart() {
     if (!state) return;
-    const generator = new Vtg(URL.createObjectURL(state.video));
-
-    const durationSec = state.endSec - state.startSec;
+    const { start  } = initVideoCaptureMachine({
+      src: URL.createObjectURL(state.video)
+    })
 
     const exist = await isMetaExist(state.key);
     if (!exist) {
@@ -73,20 +84,13 @@ function Page() {
       await saveNewMeta(meta);
     }
 
-    for (let i = 0; i < durationSec; i++) {
-      const time = state.startSec + i;
-      const result = await generator.getThumbnail(time, true);
-      console.log(result);
+    const results = await start({
+      start: state.startSec,
+      end: state.endSec,
+      progressFn: updateProgress,
+    });
 
-      await insertCapture(state.key, result.blob);
-      setState((prev) => {
-        if (!prev) return undefined;
-        return {
-          ...prev,
-          progress: (i / durationSec) * 100,
-        };
-      });
-    }
+    await Promise.all(results.map(v => insertCapture(state.key, v.file)));
 
     navigate({
       to: "/v/$key",
@@ -166,9 +170,15 @@ function Page() {
               </div>
             </div>
           ) : (
-            <Button onClick={handleClickSelectVideo}>
-              <Video className="mr-2 h-4 w-4" /> Select video
-            </Button>
+            <FileUploader
+              className="bg-white w-full"
+              accept={{
+                "video/webm": [],
+                "video/mp4": [],
+              }}
+              onUpload={handleClickSelectVideo}
+              maxSize={1024 * 1024 * 1024 * 1.5}
+            />
           )}
         </div>
       </div>

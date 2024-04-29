@@ -35,7 +35,7 @@ export function ContentTitle({ title, onEdit }: Props) {
         <>
           <Input
             ref={ref}
-            className="max-w-md"
+            className="min-w-96 max-w-2xl"
             autoFocus
             defaultValue={title}
           />

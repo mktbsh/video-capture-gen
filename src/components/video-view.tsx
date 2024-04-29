@@ -1,4 +1,4 @@
-import { useObjectURL } from "@/lib/use-object-url";
+import { useObjectURL } from "@/hooks/use-object-url";
 
 type Props = {
   video: File;
@@ -7,5 +7,5 @@ type Props = {
 export function VideoView({ video }: Props) {
   const { url } = useObjectURL(video);
 
-  return <video className="w-full h-auto" src={url} autoPlay muted loop controls />;
+  return <video className="w-full h-auto max-h-[720px]" src={url} autoPlay muted loop controls />;
 }

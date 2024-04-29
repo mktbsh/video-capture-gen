@@ -1,3 +1,38 @@
+
+type VideoMetadata = {
+  height: number;
+  width: number;
+  duration: number;
+}
+
+const ERR_LOAD_METADATA = "Error loading video (codec might not be supported by this browser)";
+
+export function loadVideoMetadata(video: HTMLVideoElement): Promise<VideoMetadata> {
+  const event = "loadedmetadata";
+  return new Promise<VideoMetadata>((resolve, reject) => {
+    function handleLoadMetadata() {
+      resolve({
+        height: video.videoHeight,
+        width: video.videoWidth,
+        duration: video.duration
+      });
+
+      video.removeEventListener(event, handleLoadMetadata);
+      video.removeEventListener("error", handleError);
+    }
+
+    function handleError() {
+      reject(new Error(ERR_LOAD_METADATA));
+      video.removeEventListener(event, handleLoadMetadata);
+      video.removeEventListener("error", handleError);
+    }
+
+    video.addEventListener(event, handleLoadMetadata);
+    video.addEventListener("error", handleError);
+    video.load();
+  });
+}
+
 export function getDurationFromVideo(file: File): Promise<number> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -29,7 +64,7 @@ const TRANSFER_CONST = {
   ERROR: "Failed to create blob from canvas",
 };
 
-type Transferred = {
+export type TransferredImage = {
   blob: Blob;
   width: number;
   height: number;
@@ -40,11 +75,11 @@ export function transferImage({
   video,
   convertTo = "png",
   quality = 1,
-}: TransferOptions): Promise<Transferred> {
+}: TransferOptions): Promise<TransferredImage> {
   const vh = video.videoHeight,
     vw = video.videoWidth;
 
-  return new Promise<Transferred>((resolve, reject) => {
+  return new Promise<TransferredImage>((resolve, reject) => {
     const ctx = canvas.getContext("2d");
     ctx?.drawImage(video, 0, 0, vw, vh);
 
