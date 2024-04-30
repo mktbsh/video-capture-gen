@@ -1,3 +1,6 @@
+import { createDOM } from "./dom";
+import { objectURL } from "./object-url";
+
 type HeadlessFilePickerOptions = {
   accept: HTMLInputElement["accept"];
   multiple: HTMLInputElement["multiple"];
@@ -42,4 +45,21 @@ export function fileSize({ source, digit = 2 }: FileSizeOptions) {
 	}
 
 	return [bytes.toFixed(digit), UNIT[count]].join(" ");
+}
+
+type FileDownloadOptions = {
+  file: File;
+} | {
+  filename: string;
+  data: Blob;
+}
+
+export function fileDownload(options: FileDownloadOptions) {
+  const isFile = "file" in options;
+  const a = createDOM("a");
+  a.href = objectURL.create(isFile ? options.file : options.data);
+  a.download = isFile ? options.file.name : options.filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  a.remove();
 }

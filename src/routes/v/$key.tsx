@@ -2,14 +2,12 @@ import { CaptureGrid } from "@/components/capture-grid";
 import { ContentLayout } from "@/components/content-layout";
 import { ContentTitle } from "@/components/content-title";
 import { Button } from "@/components/ui/button";
-import { deleteVideoByVideoKey, updateMetaTitle } from "@/infra/db";
-import { createDOM } from "@/lib/dom";
 import { fileSize } from "@/lib/file";
-import { compress } from "@/lib/zip";
 import { useCapturesByVideoKey } from "@/usecase/use-captures";
 import { useGetMetaByKey } from "@/usecase/use-meta";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
+import { usePageLogic } from "./-lib/use-$key-logic";
 
 export const Route = createFileRoute("/v/$key")({
   component: Page,
@@ -18,39 +16,16 @@ export const Route = createFileRoute("/v/$key")({
 function Page() {
   const { key } = Route.useParams();
   const meta = useGetMetaByKey(key);
-  const navigate = useNavigate({ from: "/v/$key" });
 
   const { captures, totalSize } = useCapturesByVideoKey(key);
 
-  async function handleEditTitle(newTitle: string) {
-    if (!meta) return;
-    await updateMetaTitle(meta.key, newTitle);
-  }
-
-  async function handleDelete() {
-    await navigate({
-      to: "/",
-      replace: true,
-    });
-    deleteVideoByVideoKey(key);
-  }
-
-  async function handleDownloadZip() {
-    const zipName = `${crypto.randomUUID()}.zip`;
-    const files = captures.map(v => v.data);
-
-    const zip = await compress(files, zipName)
-    const a = createDOM("a", (el) => {
-      el.download = zipName;
-      el.href = URL.createObjectURL(zip)
-    })
-
-    a.click();
-    URL.revokeObjectURL(a.href);
-    a.remove();
-  }
+  const logic = usePageLogic();
 
   if (!meta) return null;
+
+  const handleEditTitle = logic.registerEditTitleFn(meta.key);
+  const handleDelete = logic.registerDeleteVideoFn(meta.key);
+  const handleDownloadZip = logic.registerDownloadZipFn(captures);
 
   return (
     <ContentLayout className="pb-0">

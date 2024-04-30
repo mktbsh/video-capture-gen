@@ -1,4 +1,5 @@
 import { createDOM } from "./dom";
+import { uuidGen } from "./utils";
 import { TransferredImage, loadVideoMetadata, transferImage } from "./video";
 
 type InitCaptureMachineOptions = {
@@ -27,7 +28,7 @@ type CapturedImage = {
 
 export function initVideoCaptureMachine({ src }: InitCaptureMachineOptions) {
   if (!src) throw new Error("No video source provided");
-  const sessionId = crypto.randomUUID();
+  const sessionId = uuidGen();
   const canvas = createDOM("canvas");
   const video = createDOM("video", (el) => {
     el.crossOrigin = "anonymous";

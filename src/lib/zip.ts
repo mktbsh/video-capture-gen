@@ -1,6 +1,6 @@
 import { AsyncZipOptions, zip } from "fflate";
 
-export const compress = async (
+export const compressZip = async (
   files: File[],
   filename: string,
   compressOptions: AsyncZipOptions | undefined = undefined

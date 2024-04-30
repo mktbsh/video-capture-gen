@@ -1,3 +1,4 @@
+import { objectURL } from "@/lib/object-url";
 import { useEffect, useState } from "react";
 
 type ObjectSource = Blob | MediaSource | File;
@@ -9,11 +10,11 @@ export function useObjectURL(initialObject: ObjectSource) {
   useEffect(() => {
     if (!obj) return;
 
-    const objectURL = URL.createObjectURL(obj);
-    setURL(objectURL);
+    const _url = objectURL.create(obj);
+    setURL(_url);
 
     return () => {
-      URL.revokeObjectURL(objectURL);
+      objectURL.revoke(_url);
       setURL("");
     };
   }, [obj]);
