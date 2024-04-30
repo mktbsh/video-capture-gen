@@ -13,25 +13,23 @@ type CoreParams<T> = {
   videoKey: string;
 } & T;
 
-type SaveParams = CoreParams<{
+export type CaptureInsertModel = CoreParams<{
   time: number;
   data: File;
 }>;
 
-export async function saveNewCapture({
-  data,
-  time,
-  videoKey,
-}: SaveParams): Promise<Capture> {
-  const capture: Capture = {
-    key: videoKey,
-    time,
+function createCapture(params: CaptureInsertModel): Capture {
+  return {
+    key: params.videoKey,
+    time: params.time,
     createdAt: now("epoch"),
-    data,
-  };
+    data: params.data,
+  }
+}
 
+export async function saveNewCapture(params: CaptureInsertModel): Promise<Capture> {
+  const capture = createCapture(params);
   await db.captures.add(capture);
-
   return capture;
 }
 

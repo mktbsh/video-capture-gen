@@ -2,7 +2,6 @@ import { CaptureGrid } from "@/components/capture-grid";
 import { ContentLayout } from "@/components/content-layout";
 import { ContentTitle } from "@/components/content-title";
 import { Button } from "@/components/ui/button";
-import { fileSize } from "@/lib/file";
 import { useCapturesByVideoKey } from "@/usecase/use-captures";
 import { useGetMetaByKey } from "@/usecase/use-meta";
 import { createFileRoute } from "@tanstack/react-router";
@@ -46,10 +45,7 @@ function Page() {
           Download as zip
         </Button>
         <span className="ml-auto">
-          {fileSize({
-            source: totalSize,
-            digit: 2,
-          })}
+          {logic.toFileSizeText(totalSize)}
         </span>
       </div>
     </ContentLayout>

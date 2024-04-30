@@ -17,7 +17,7 @@ type CaptureOption = {
   end: number;
   filenameFn?: (filename: string) => string;
   progressFn?: (progress: number) => void;
-}
+};
 
 type CapturedImage = {
   file: File;
@@ -75,15 +75,16 @@ export function initVideoCaptureMachine({ src }: InitCaptureMachineOptions) {
     URL.revokeObjectURL(video.src);
   }
 
+  function defaultFilenameFn(name: string): string {
+    return `${sessionId}_${name}`;
+  }
+
   async function start(options: CaptureOption): Promise<CapturedImage[]> {
-    const pfStart = performance.now();
-    const { end, start, filenameFn, progressFn  } = options
+    const { end, start, filenameFn, progressFn } = options;
     const duration = end - start;
     const results: CapturedImage[] = [];
 
-    const _filenameFn = filenameFn
-      ? filenameFn
-      : (name: string) => `${sessionId}_${name}`;
+    const _filenameFn = filenameFn || defaultFilenameFn;
 
     for (let i = 0; i < duration; i++) {
       const time = start + i;
@@ -92,7 +93,7 @@ export function initVideoCaptureMachine({ src }: InitCaptureMachineOptions) {
       const originalName = `${i.toFixed(0).padStart(6, "0")}s.webp`;
       const filename = _filenameFn(originalName);
 
-      progressFn?.(i / duration * 100);
+      progressFn?.((i / duration) * 100);
       results.push({
         file: new File([image.blob], filename, { type: "image/webp" }),
         height: image.height,
@@ -102,11 +103,6 @@ export function initVideoCaptureMachine({ src }: InitCaptureMachineOptions) {
     }
 
     destroy();
-
-    const pfEnd = performance.now();
-
-    console.info(`${sessionId}/start: ${pfEnd - pfStart}ms`);
-
     return results;
   }
 

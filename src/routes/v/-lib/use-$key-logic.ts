@@ -1,5 +1,5 @@
 import { Capture, deleteVideoByVideoKey, updateMetaTitle } from "@/infra/db";
-import { fileDownload } from "@/lib/file";
+import { fileDownload, fileSize } from "@/lib/file";
 import { uuidGen } from "@/lib/utils";
 import { compressZip } from "@/lib/zip";
 import { useNavigate } from "@tanstack/react-router";
@@ -33,9 +33,14 @@ export function usePageLogic() {
     };
   }
 
+  function toFileSizeText(size: number): string {
+    return fileSize({ source: size, digit: 2 });
+  }
+
   return {
     registerEditTitleFn,
     registerDeleteVideoFn,
     registerDownloadZipFn,
+    toFileSizeText
   };
 }
