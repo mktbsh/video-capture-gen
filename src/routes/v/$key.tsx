@@ -2,11 +2,10 @@ import { CaptureGrid } from "@/components/capture-grid";
 import { ContentLayout } from "@/components/content-layout";
 import { ContentTitle } from "@/components/content-title";
 import { Button } from "@/components/ui/button";
+import { deleteVideoByVideoKey, updateMetaTitle } from "@/infra/db";
 import { createDOM } from "@/lib/dom";
 import { fileSize } from "@/lib/file";
 import { compress } from "@/lib/zip";
-import { updateMetaTitle } from "@/repository/meta-repository";
-import { deleteByVideoKey } from "@/usecase/delete-video";
 import { useCapturesByVideoKey } from "@/usecase/use-captures";
 import { useGetMetaByKey } from "@/usecase/use-meta";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -33,7 +32,7 @@ function Page() {
       to: "/",
       replace: true,
     });
-    deleteByVideoKey(key);
+    deleteVideoByVideoKey(key);
   }
 
   async function handleDownloadZip() {

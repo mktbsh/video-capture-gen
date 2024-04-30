@@ -22,6 +22,7 @@ type CapturedImage = {
   file: File;
   height: number;
   width: number;
+  time: number;
 };
 
 export function initVideoCaptureMachine({ src }: InitCaptureMachineOptions) {
@@ -95,6 +96,7 @@ export function initVideoCaptureMachine({ src }: InitCaptureMachineOptions) {
         file: new File([image.blob], filename, { type: "image/webp" }),
         height: image.height,
         width: image.width,
+        time,
       });
     }
 

@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { VideoView } from "@/components/video-view";
+import { saveNewCapture } from "@/infra/db";
 import { sha256 } from "@/lib/hash";
 import { cn } from "@/lib/utils";
 import { getDurationFromVideo } from "@/lib/video";
 import { initVideoCaptureMachine } from "@/lib/video-capture";
-import { insertCapture } from "@/repository/capture-repository";
 import {
   createMeta,
   isMetaExist,
   saveNewMeta,
-} from "@/repository/meta-repository";
+} from "@/infra/db";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -82,7 +82,11 @@ function Page() {
       progressFn: updateProgress,
     });
 
-    await Promise.all(results.map((v) => insertCapture(state.key, v.file)));
+    await Promise.all(results.map((v) => saveNewCapture({
+      videoKey: state.key,
+      time: v.time,
+      data: v.file
+    })));
 
     navigate({
       to: "/v/$key",
