@@ -66,7 +66,7 @@ function Page() {
 
   async function handleStart() {
     if (!state) return;
-    const { start } = initVideoCaptureMachine({
+    const { startWithCallback } = initVideoCaptureMachine({
       src: URL.createObjectURL(state.video),
     });
 
@@ -76,17 +76,19 @@ function Page() {
       await saveNewMeta(meta);
     }
 
-    const results = await start({
+
+    await startWithCallback({
       start: state.startSec,
       end: state.endSec,
       progressFn: updateProgress,
-    });
-
-    await Promise.all(results.map((v) => saveNewCapture({
-      videoKey: state.key,
-      time: v.time,
-      data: v.file
-    })));
+      imageCallbackFn(image) {
+        saveNewCapture({
+          videoKey: state.key,
+          time: image.time,
+          data: image.file
+        });
+      },
+    })
 
     navigate({
       to: "/v/$key",
