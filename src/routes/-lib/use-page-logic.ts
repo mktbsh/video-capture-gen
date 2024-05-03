@@ -139,9 +139,7 @@ export function usePageLogic() {
         });
         onCompleted(state.key);
       } else {
-        const images = await machine.getResultAsArray(updateProgress);
-        const files = images.map((v) => v.file);
-        const zip = await compressZip(files, `${uuidGen()}.zip`);
+        const zip = await machine.getResultAsZip(`${uuidGen()}.zip`, updateProgress);
         onCompleted(zip);
         onReset()
       }

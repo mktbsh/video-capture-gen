@@ -1,3 +1,4 @@
+import { Zip, ZipPassThrough, zipSync } from "fflate";
 import { chunkArray, createFillArray, uuidGen, zeroPad } from "../utils";
 import { initCapturer } from "./capturer";
 import {
@@ -122,8 +123,26 @@ export function initVideoCaptureMachine({
     return results;
   }
 
+  async function getResultAsZip(
+    zipName: string,
+    progressFn?: CaptureOptions["progressFn"],
+  ): Promise<File> {
+    const dict: Record<string, Uint8Array> = {};
+
+    await run({
+      progressFn,
+      imageCallbackFn: async ({file}) => {
+        dict[file.name] = new Uint8Array(await file.arrayBuffer());
+      },
+    });
+
+    const bin = zipSync(dict, { level: 0 });
+    return new File([bin], zipName, { type: "application/zip" })
+  }
+
   return {
     run,
     getResultAsArray,
+    getResultAsZip
   };
 }
