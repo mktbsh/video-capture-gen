@@ -5,20 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { VideoView } from "@/components/video-view";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { usePageLogic } from "./-lib/use-page-logic";
 import { Stats } from "./-components";
 import { ACCEPT_FILE_TYPES, MAX_VIDEO_SIZE } from "./-const";
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { fileDownload } from "@/lib/file";
 import { ImageTypeSelect } from "./-components/image-type-select";
 import { Input } from "@/components/ui/input";
 
-export const Route = createFileRoute("/")({
+export const Route = createLazyFileRoute("/zip")({
   component: Page,
 });
 
 function Page() {
-  const navigate = useNavigate({ from: "/" });
-
   const logic = usePageLogic();
 
   const state = logic.state;
@@ -26,8 +25,10 @@ function Page() {
   const hasVideo = state !== undefined;
 
   const handleClickStart = logic.registerCaptureHandlerFn({
-    mode: "db",
-    onCompleted: (key) => navigate({ to: "/v/$key", params: { key } }),
+    mode: "zip",
+    onCompleted: (file) => {
+      fileDownload({ file });
+    },
   });
 
   const actions = (
@@ -41,12 +42,12 @@ function Page() {
   return (
     <ContentLayout>
       <ContentLayout.Header actions={hasVideo ? actions : undefined}>
-        <ContentTitle title="Local DB Mode" />
+        <ContentTitle title="ZIP File Mode" />
       </ContentLayout.Header>
       <div className="flex-1 bg-muted/50 mx-4 rounded-xl">
-        <div className="w-full h-full grid place-items-center">
+        <div className="w-full h-full grid place-items-center p-4">
           {hasVideo ? (
-            <div>
+            <div className="space-y-2">
               <VideoView video={state.video} />
               {state.progress === undefined ? (
                 <div className="flex gap-4">
@@ -57,7 +58,10 @@ function Page() {
                     step={1}
                     onValueChange={logic.onChangeDuration}
                   />
-                  <ImageTypeSelect currentValue={state.outputImageType} onChange={logic.onChangeImageType} />
+                  <ImageTypeSelect
+                    currentValue={state.outputImageType}
+                    onChange={logic.onChangeImageType}
+                  />
                   {state.outputImageType !== "png" && (
                     <Input
                       type="number"

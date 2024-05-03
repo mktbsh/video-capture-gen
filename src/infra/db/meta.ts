@@ -2,7 +2,6 @@ import { now } from "@/lib/utils";
 import { db } from "./_db";
 import { sha256 } from "@/lib/hash";
 
-
 export type Meta = {
   key: string;
   title: string;
@@ -10,9 +9,8 @@ export type Meta = {
   updatedAt: number;
 };
 
-
 async function createMeta(video: File): Promise<Meta> {
-  const time = now('epoch')
+  const time = now("epoch");
   return {
     key: await sha256(video),
     title: video.name,
@@ -31,15 +29,28 @@ async function saveNewMeta(meta: Meta): Promise<boolean> {
   return true;
 }
 
+async function insertMetaIfNotExist(meta: Meta): Promise<void> {
+  const exist = await isMetaExist(meta.key);
+  if (exist) return;
+  await saveNewMeta(meta);
+}
+
 async function updateMetaTitle(key: Meta["key"], newTitle: string) {
   return await db.meta.update(key, {
     title: newTitle,
     updatedAt: Date.now(),
-  })
+  });
 }
 
 async function deleteMetaByKey(key: string) {
   await db.meta.delete(key);
 }
 
-export { createMeta, saveNewMeta, updateMetaTitle, isMetaExist, deleteMetaByKey };
+export {
+  createMeta,
+  saveNewMeta,
+  insertMetaIfNotExist,
+  updateMetaTitle,
+  isMetaExist,
+  deleteMetaByKey,
+};

@@ -54,10 +54,10 @@ export function getDurationFromVideo(file: File): Promise<number> {
   });
 }
 
-export type OutputImage =
-  | { type: "png" }
-  | { type: "jpeg"; quality: number }
-  | { type: "webp"; quality: number };
+export type OutputImage = {
+  type: "png" | "jpeg" | "webp";
+  quality: number
+};
 
 type TransferOptions = {
   canvas: HTMLCanvasElement;
@@ -80,7 +80,7 @@ export type TransferredImage = {
 export function transferImage({
   canvas,
   video,
-  output = { type: "png" },
+  output = { type: "png", quality: 1 },
 }: TransferOptions): Promise<TransferredImage> {
   const height = video.videoHeight,
     width = video.videoWidth;
