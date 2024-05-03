@@ -1,4 +1,4 @@
-import { Zip, ZipPassThrough, zipSync } from "fflate";
+import { zipSync } from "fflate";
 import { chunkArray, createFillArray, uuidGen, zeroPad } from "../utils";
 import { initCapturer } from "./capturer";
 import {

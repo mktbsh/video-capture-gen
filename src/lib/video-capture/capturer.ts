@@ -1,7 +1,7 @@
 import { createDOM } from "../dom";
 import { TransferredImage, loadVideoMetadata, transferImage } from "../video";
 import { CaptureOptions, CaptureTask, CapturedImage } from "./types";
-import { parallels, toMmSs, uuidGen } from "../utils";
+import { parallels, toMmSs } from "../utils";
 import { objectURL } from "../object-url";
 
 type InitCapturerOptions = {

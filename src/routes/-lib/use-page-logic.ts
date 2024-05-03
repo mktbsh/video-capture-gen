@@ -7,7 +7,6 @@ import { sha256 } from "@/lib/hash";
 import { uuidGen } from "@/lib/utils";
 import { OutputImage, getDurationFromVideo } from "@/lib/video";
 import { initVideoCaptureMachine } from "@/lib/video-capture";
-import { compressZip } from "@/lib/zip";
 import { useMemo, useState } from "react";
 
 type PageState = {
