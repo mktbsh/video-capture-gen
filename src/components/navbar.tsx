@@ -1,4 +1,4 @@
-import { useMetaVideos } from "@/usecase/use-meta";
+import { useMetaVideos } from "@/hooks/use-meta";
 import { Link } from "@tanstack/react-router";
 import { ChevronRightIcon, Search } from "lucide-react";
 import { Input } from "./ui/input";

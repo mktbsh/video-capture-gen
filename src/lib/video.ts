@@ -1,20 +1,22 @@
-
 type VideoMetadata = {
   height: number;
   width: number;
   duration: number;
-}
+};
 
-const ERR_LOAD_METADATA = "Error loading video (codec might not be supported by this browser)";
+const ERR_LOAD_METADATA =
+  "Error loading video (codec might not be supported by this browser)";
 
-export function loadVideoMetadata(video: HTMLVideoElement): Promise<VideoMetadata> {
+export function loadVideoMetadata(
+  video: HTMLVideoElement,
+): Promise<VideoMetadata> {
   const event = "loadedmetadata";
   return new Promise<VideoMetadata>((resolve, reject) => {
     function handleLoadMetadata() {
       resolve({
         height: video.videoHeight,
         width: video.videoWidth,
-        duration: video.duration
+        duration: video.duration,
       });
 
       video.removeEventListener(event, handleLoadMetadata);
@@ -52,11 +54,15 @@ export function getDurationFromVideo(file: File): Promise<number> {
   });
 }
 
+export type OutputImage =
+  | { type: "png" }
+  | { type: "jpeg"; quality: number }
+  | { type: "webp"; quality: number };
+
 type TransferOptions = {
   canvas: HTMLCanvasElement;
   video: HTMLVideoElement;
-  convertTo?: "png" | "jpeg" | "webp";
-  quality?: number;
+  output: OutputImage;
 };
 
 const TRANSFER_CONST = {
@@ -68,36 +74,32 @@ export type TransferredImage = {
   blob: Blob;
   width: number;
   height: number;
+  type: string;
 };
 
 export function transferImage({
   canvas,
   video,
-  convertTo = "png",
-  quality = 1,
+  output = { type: "png" },
 }: TransferOptions): Promise<TransferredImage> {
-  const vh = video.videoHeight,
-    vw = video.videoWidth;
+  const height = video.videoHeight,
+    width = video.videoWidth;
 
   return new Promise<TransferredImage>((resolve, reject) => {
     const ctx = canvas.getContext("2d");
-    ctx?.drawImage(video, 0, 0, vw, vh);
+    ctx?.drawImage(video, 0, 0, width, height);
 
-    const type = `image/${convertTo}`;
-    const q = convertTo === "png" ? 1 : quality;
+    const type = `image/${output.type}`;
+    const q = output.type === "png" ? 1 : output.quality;
 
-    canvas.toBlob(
-      (blob) => {
-        blob
-          ? resolve({
-              blob,
-              height: vh,
-              width: vw,
-            })
-          : reject(new Error(TRANSFER_CONST.ERROR));
-      },
-      type,
-      q,
-    );
+    const toBlob = (blob: Blob | null) => {
+      if (blob) {
+        resolve({ blob, width, height, type });
+      } else {
+        reject(new Error(TRANSFER_CONST.ERROR));
+      }
+    };
+
+    canvas.toBlob(toBlob, type, q);
   });
 }

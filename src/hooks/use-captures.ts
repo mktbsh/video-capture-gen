@@ -2,7 +2,7 @@ import { db } from "@/infra/db";
 import { useLiveQuery } from "dexie-react-hooks";
 
 export function useCapturesByVideoKey(key: string) {
-  const data = useLiveQuery(() => key ? db.captures.where({ key }).sortBy("createdAt") : [], [key]);
+  const data = useLiveQuery(() => key ? db.captures.where({ key }).sortBy("time") : [], [key]);
   const captures = data || [];
 
   return {

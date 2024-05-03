@@ -7,16 +7,12 @@ import { Slider } from "@/components/ui/slider";
 import { VideoView } from "@/components/video-view";
 import { saveNewCapture } from "@/infra/db";
 import { sha256 } from "@/lib/hash";
-import { cn } from "@/lib/utils";
+import { cn, toMmSs } from "@/lib/utils";
 import { getDurationFromVideo } from "@/lib/video";
-import { initVideoCaptureMachine } from "@/lib/video-capture";
-import {
-  createMeta,
-  isMetaExist,
-  saveNewMeta,
-} from "@/infra/db";
+import { createMeta, isMetaExist, saveNewMeta } from "@/infra/db";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { initVideoCaptureMachine } from "@/lib/video-capture";
 
 export const Route = createFileRoute("/")({
   component: Page,
@@ -66,8 +62,14 @@ function Page() {
 
   async function handleStart() {
     if (!state) return;
-    const { startWithCallback } = initVideoCaptureMachine({
-      src: URL.createObjectURL(state.video),
+    const captureMachine = initVideoCaptureMachine({
+      src: state.video,
+      captureEnd: state.endSec,
+      captureStart: state.startSec,
+      outputOptions: {
+        type: "webp",
+        quality: 0.85,
+      },
     });
 
     const exist = await isMetaExist(state.key);
@@ -76,19 +78,16 @@ function Page() {
       await saveNewMeta(meta);
     }
 
-
-    await startWithCallback({
-      start: state.startSec,
-      end: state.endSec,
+    await captureMachine.run({
       progressFn: updateProgress,
       imageCallbackFn(image) {
         saveNewCapture({
           videoKey: state.key,
           time: image.time,
-          data: image.file
+          data: image.file,
         });
       },
-    })
+    });
 
     navigate({
       to: "/v/$key",
@@ -143,8 +142,8 @@ function Page() {
                 </div>
               ) : (
                 <div className="pt-4">
-                <Progress value={state.progress} />
-              </div>
+                  <Progress value={state.progress} />
+                </div>
               )}
 
               <dl
@@ -176,7 +175,7 @@ function Page() {
                 "video/mp4": [],
               }}
               onUpload={handleFileAccepted}
-              maxSize={1024 * 1024 * 1024 * 1.5}
+              maxSize={1024 * 1024 * 1024 * 2}
             />
           )}
         </div>
@@ -190,13 +189,8 @@ type Props = {
   time: number;
 };
 
-const zeroPad = (value: number): string => value.toFixed(0).padStart(2, "0");
-
 function Stat({ label, time }: Props) {
-  const minutes = Math.floor(time / 60);
-  const seconds = time - minutes * 60;
-
-  const text = `${zeroPad(minutes)}:${zeroPad(seconds)}`;
+  const text = toMmSs(time);
 
   return (
     <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
