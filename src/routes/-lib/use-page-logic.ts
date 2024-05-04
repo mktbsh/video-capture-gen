@@ -1,8 +1,4 @@
-import {
-  createMeta,
-  insertMetaIfNotExist,
-  saveNewCapture,
-} from "@/infra/db";
+import { db } from "@/infra/db";
 import { sha256 } from "@/lib/hash";
 import { uuidGen } from "@/lib/utils";
 import { OutputImage, getDurationFromVideo } from "@/lib/video";
@@ -20,13 +16,15 @@ type PageState = {
   outputImageQuality: OutputImage["quality"];
 };
 
-type CaptureHandlerOptions = {
-  mode: "db";
-  onCompleted: (videoKey: string) => void;
-} | {
-  mode: "zip";
-  onCompleted: (zip: File) => void;
-}
+type CaptureHandlerOptions =
+  | {
+      mode: "db";
+      onCompleted: (videoKey: string) => void;
+    }
+  | {
+      mode: "zip";
+      onCompleted: (zip: File) => void;
+    };
 
 export function usePageLogic() {
   const [state, setState] = useState<PageState>();
@@ -47,9 +45,8 @@ export function usePageLogic() {
         label: "Duration",
         value: endSec - startSec,
       },
-    ]
-
-  }, [state])
+    ];
+  }, [state]);
 
   function updateProgress(progress: number) {
     setState((prev) => {
@@ -85,7 +82,7 @@ export function usePageLogic() {
     setState((prev) => {
       if (!prev) return undefined;
       return fn(prev);
-    })
+    });
   }
 
   function onChangeDuration([start, end]: number[]) {
@@ -93,24 +90,27 @@ export function usePageLogic() {
       ...prev,
       startSec: start,
       endSec: end,
-    }))
+    }));
   }
 
   function onChangeImageType(type: OutputImage["type"]) {
     safetySetState((prev) => ({
       ...prev,
       outputImageType: type,
-    }))
+    }));
   }
 
   function onChangeImageQuality(q: number) {
     safetySetState((prev) => ({
       ...prev,
       outputImageQuality: q,
-    }))
+    }));
   }
 
-  function registerCaptureHandlerFn({ mode, onCompleted }: CaptureHandlerOptions) {
+  function registerCaptureHandlerFn({
+    mode,
+    onCompleted,
+  }: CaptureHandlerOptions) {
     if (!state) return undefined;
 
     return async function onCapture() {
@@ -120,29 +120,28 @@ export function usePageLogic() {
         captureStart: state.startSec,
         outputOptions: {
           type: state.outputImageType,
-          quality: state.outputImageQuality
+          quality: state.outputImageQuality,
         },
       });
 
       if (mode === "db") {
-        createMeta(state.video).then(insertMetaIfNotExist);
+        db.createMeta(state.video).then(db.insertMetaIfNotExist);
         await machine.run({
           progressFn: updateProgress,
           imageCallbackFn(image) {
-            saveNewCapture({
-              videoKey: state.key,
-              time: image.time,
-              data: image.file,
-            });
+            db.insertCapture(image, state.key);
           },
         });
         onCompleted(state.key);
       } else {
-        const zip = await machine.getResultAsZip(`${uuidGen()}.zip`, updateProgress);
+        const zip = await machine.getResultAsZip(
+          `${uuidGen()}.zip`,
+          updateProgress,
+        );
         onCompleted(zip);
-        onReset()
+        onReset();
       }
-    }
+    };
   }
 
   return {
@@ -153,6 +152,6 @@ export function usePageLogic() {
     onChangeImageQuality,
     onFileAccepted,
     onReset,
-    registerCaptureHandlerFn
+    registerCaptureHandlerFn,
   };
 }

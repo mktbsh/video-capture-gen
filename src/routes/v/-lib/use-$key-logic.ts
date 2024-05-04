@@ -1,4 +1,4 @@
-import { Capture, deleteVideoByVideoKey, updateMetaTitle } from "@/infra/db";
+import { Capture, db } from "@/infra/db";
 import { fileDownload, fileSize } from "@/lib/file";
 import { uuidGen } from "@/lib/utils";
 import { compressZip } from "@/lib/zip";
@@ -9,7 +9,7 @@ export function usePageLogic() {
 
   function registerEditTitleFn(videoKey: string) {
     return function handleEditTitle(newTitle: string) {
-      return updateMetaTitle(videoKey, newTitle);
+      return db.updateMetaTitle(videoKey, newTitle);
     };
   }
 
@@ -19,7 +19,7 @@ export function usePageLogic() {
         to: "/",
         replace: true,
       });
-      deleteVideoByVideoKey(videoKey);
+      db.deleteVideoByVideoKey(videoKey);
     };
   }
 
