@@ -1,10 +1,10 @@
-import { db } from "@/infra/db";
+import { dbInstance } from "@/infra/db";
 import { useLiveQuery } from "dexie-react-hooks";
 
 export function useMetaVideos() {
-  return useLiveQuery(() => db.meta.orderBy('createdAt').toArray());
+  return useLiveQuery(() => dbInstance.findAllVideoMeta());
 }
 
 export function useGetMetaByKey(key: string) {
-  return useLiveQuery(() => db.meta.get(key), [key]);
+  return useLiveQuery(() => dbInstance.findVideoMetaByKey(key), [key]);
 }

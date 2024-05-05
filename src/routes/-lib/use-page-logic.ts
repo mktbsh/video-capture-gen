@@ -1,4 +1,4 @@
-import { db } from "@/infra/db";
+import { dbInstance } from "@/infra/db";
 import { sha256 } from "@/lib/hash";
 import { uuidGen } from "@/lib/utils";
 import { OutputImage, getDurationFromVideo } from "@/lib/video";
@@ -125,11 +125,11 @@ export function usePageLogic() {
       });
 
       if (mode === "db") {
-        db.createMeta(state.video).then(db.insertMetaIfNotExist);
+        await dbInstance.createMeta(state.video).then(dbInstance.insertMetaIfNotExist);
         await machine.run({
           progressFn: updateProgress,
           imageCallbackFn(image) {
-            db.insertCapture(image, state.key);
+            dbInstance.insertCapture(image, state.key);
           },
         });
         onCompleted(state.key);

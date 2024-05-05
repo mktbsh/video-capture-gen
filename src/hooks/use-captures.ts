@@ -1,8 +1,8 @@
-import { db } from "@/infra/db";
+import { dbInstance } from "@/infra/db";
 import { useLiveQuery } from "dexie-react-hooks";
 
 export function useCapturesByVideoKey(key: string) {
-  const data = useLiveQuery(() => key ? db.captures.where({ key }).sortBy("time") : [], [key]);
+  const data = useLiveQuery(() => dbInstance.findCapturesByKey(key), [key]);
   const captures = data || [];
 
   return {
