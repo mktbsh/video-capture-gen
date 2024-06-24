@@ -1,5 +1,5 @@
 import { CaptureView } from "./capture-view";
-import { Capture } from "@/infra/db/capture";
+import type { Capture } from "@/infra/db/capture";
 
 type Props = {
   captures: readonly Capture[];

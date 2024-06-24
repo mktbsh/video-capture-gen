@@ -42,14 +42,23 @@ const VKeyRoute = VKeyImport.update({
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
     '/zip': {
+      id: '/zip'
+      path: '/zip'
+      fullPath: '/zip'
       preLoaderRoute: typeof ZipLazyImport
       parentRoute: typeof rootRoute
     }
     '/v/$key': {
+      id: '/v/$key'
+      path: '/v/$key'
+      fullPath: '/v/$key'
       preLoaderRoute: typeof VKeyImport
       parentRoute: typeof rootRoute
     }
@@ -58,10 +67,34 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren([
+export const routeTree = rootRoute.addChildren({
   IndexRoute,
   ZipLazyRoute,
   VKeyRoute,
-])
+})
 
 /* prettier-ignore-end */
+
+/* ROUTE_MANIFEST_START
+{
+  "routes": {
+    "__root__": {
+      "filePath": "__root.tsx",
+      "children": [
+        "/",
+        "/zip",
+        "/v/$key"
+      ]
+    },
+    "/": {
+      "filePath": "index.tsx"
+    },
+    "/zip": {
+      "filePath": "zip.lazy.tsx"
+    },
+    "/v/$key": {
+      "filePath": "v/$key.tsx"
+    }
+  }
+}
+ROUTE_MANIFEST_END */
